@@ -1,0 +1,20 @@
+---
+description: Git remote — only the user reviews and pushes; the agent never publishes to remote.
+alwaysApply: true
+---
+
+# Git: push and remote publish — user only
+
+## Mandatory
+
+- **Never run** `git push`, `git push --force`, `git push --force-with-lease`, or any command whose primary effect is **publishing local commits to a remote** (including flows that imply push, e.g. some `gh`/`glab` defaults that auto-push).
+- **Never** assume permission to put changes on GitHub/GitLab/Azure DevOps/Bitbucket on behalf of the user.
+
+## What you may do
+
+- Local-only git when it helps the task and the user asked or agreed: `git status`, `git diff`, `git log`, `git branch`, `git add`, `git commit`, `git stash`, `git rebase` / `git merge` locally, etc.
+- **Prepare** changes and a short summary; give the user **copy-paste commands** (`git push`, open PR) so **they** run them **after review**.
+
+## Workflow intent
+
+Only the user **checks** the diff and **pushes** (or opens the PR) to the remote. The agent prepares; the user publishes.

@@ -88,23 +88,23 @@ The MCP server provides Cursor IDE with tools to interact with Jira and Xray.
 
 #### Xray Cloud API Keys (Client ID + Client Secret)
 
-Xray использует не один "API key", а пару **Client Id** и **Client Secret**. Ключ создаётся **для конкретного пользователя Jira**.
+Xray does not use a single “API key”; it uses **Client Id** and **Client Secret**. Keys are created **for a specific Jira user**.
 
-**Шаги:**
-1. В Jira: **Settings (шестерёнка)** → **Apps** → в списке приложений найдите **Xray**.
-2. Слева в меню: **Xray Settings** → **API Keys**.
-3. Нажмите **Create API Key**.
-4. В диалоге: **выберите пользователя** (User) и нажмите **Generate**.
-5. Появятся **Client Id** и **Client Secret** — скопируйте их сразу. **Client Secret показывается один раз**, потом его нельзя посмотреть (только перегенерировать).
+**Steps:**
+1. In Jira: **Settings (gear)** → **Apps** → find **Xray** in the app list.
+2. In the menu: **Xray Settings** → **API Keys**.
+3. Click **Create API Key**.
+4. In the dialog: **select user** (User) and click **Generate**.
+5. **Client Id** and **Client Secret** are shown — copy them immediately. **Client Secret is shown once** only (regenerate if lost).
 
-Документация: [How to get API Keys](https://docs.getxray.app/display/ProductKB/%5BXray+Cloud%5D+How+to+get+API+Keys), [Global Settings: API Keys](https://docs.getxray.app/display/XRAYCLOUD/Global+Settings%3A+API+Keys).
+Docs: [How to get API Keys](https://docs.getxray.app/display/ProductKB/%5BXray+Cloud%5D+How+to+get+API+Keys), [Global Settings: API Keys](https://docs.getxray.app/display/XRAYCLOUD/Global+Settings%3A+API+Keys).
 
-**Если при создании API Key нет пользователя в списке (пустой выбор User):**
-- Заходить нужно под пользователем с правами **Jira Administrator** (или тем, у кого есть доступ к настройкам приложений).
-- Убедитесь, что заходите в **Jira Administration** → **Apps** → **Xray** → **API Keys** (именно из админки, не из проекта).
-- В Jira Cloud: **Settings** → **Apps** → **Manage your apps** → найдите Xray → **Get** / настройки, либо через **Jira settings** → **Apps** → **Xray Settings** → **API Keys** (путь может зависеть от версии).
-- Если список пользователей по-прежнему пуст: проверьте, что в Jira есть активные пользователи с доступом к сайту; при необходимости попросите другого администратора создать API Key и передать вам Client Id и Client Secret.
-- Если у вас Jira Data Center/Server — путь может быть другим (например, через **Administration** → **Applications** → **Xray**).
+**If the User list is empty when creating an API Key:**
+- Sign in as a **Jira Administrator** (or a user with access to app administration).
+- Open **Jira Administration** → **Apps** → **Xray** → **API Keys** (admin area, not inside a project).
+- In Jira Cloud: **Settings** → **Apps** → **Manage your apps** → Xray → **Get** / settings, or **Jira settings** → **Apps** → **Xray Settings** → **API Keys** (path varies by version).
+- If the user list is still empty: ensure active users exist; another admin may need to create the key and send you **Client Id** and **Client Secret**.
+- On Jira Data Center / Server the path may differ (e.g. **Administration** → **Applications** → **Xray**).
 
 ## Sync Utility
 
@@ -229,11 +229,11 @@ Creates `test-plans/PROJ/EPIC/PROJ-101/test-cases/` using Jira hierarchy (parent
 - Verify XRAY_CLIENT_ID and XRAY_CLIENT_SECRET
 - Xray Cloud credentials are separate from Jira credentials
 
-### "Нет пользователя при выборе API Key" (пустой список User при создании API Key)
-- Входить в Jira нужно под учёткой с правами **Jira Administrator**.
-- Открывать: **Settings** (или **Jira settings**) → **Apps** → **Xray** → **API Keys** (раздел **Xray Settings** → **API Keys**).
-- Если списка пользователей всё ещё нет: создание ключа может делать другой админ; после создания он передаёт вам **Client Id** и **Client Secret** — их можно подставить в MCP (`XRAY_CLIENT_ID`, `XRAY_CLIENT_SECRET`).
-- Убедитесь, что Xray установлен и активен для вашего сайта Jira Cloud.
+### "No user in API Key dialog" (empty User list when creating Xray API Key)
+- Sign in with **Jira Administrator** (or equivalent app admin rights).
+- Open **Settings** / **Jira settings** → **Apps** → **Xray** → **API Keys** (**Xray Settings** → **API Keys**).
+- If there is still no user list: another admin may create the key and send **Client Id** and **Client Secret** for MCP (`XRAY_CLIENT_ID`, `XRAY_CLIENT_SECRET`).
+- Confirm Xray is installed and active for your Jira Cloud site.
 
 ## API Reference
 

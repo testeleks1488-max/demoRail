@@ -1,0 +1,30 @@
+---
+description: User chats in Ukrainian; all repository code, comments, logs, and commit messages in English.
+alwaysApply: true
+---
+
+# Language: Ukrainian chat, English in the repo
+
+## Chat with the user
+
+- The user may write in **Ukrainian** (or mix languages). Reply in **the same language they use** for the conversation (default: Ukrainian when they write Ukrainian).
+
+## Codebase (mandatory English)
+
+Keep the following **in English only**:
+
+- Source code, scripts, MCP server, config examples
+- **Comments** and JSDoc
+- **User-facing CLI strings**: `console.log` / `console.error` / `console.warn`, thrown `Error` messages shown to developers
+- **Commit messages** and **PR titles/descriptions** you suggest for this repo
+- **`.env.example`** comments and inline documentation in tracked files
+- **Markdown docs** in the repo (`README.md`, `QUICKSTART.md`, `utilities/README.md`, etc.) unless the file is explicitly locale-specific
+
+## Do not
+
+- Do not add Ukrainian (or other non-English) text into tracked code or docs when the project standard is English.
+- Do not translate **test case markdown** under `test-plans/` unless the user asks; those are QA artifacts and may stay as authored.
+
+## Rationale
+
+The team shares the repository internationally; English in code and docs avoids mixed-language maintenance while the user keeps a natural Ukrainian dialogue in chat.

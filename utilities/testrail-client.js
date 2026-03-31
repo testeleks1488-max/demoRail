@@ -25,19 +25,19 @@ export function printTestRailPermissionHint(err) {
   const s = String(err?.message || err);
   if (!s.includes('403')) return;
   console.error(`
-TestRail 403 Forbidden — логін/API key прийняті, але **немає прав** на цю операцію:
-  • У вебі відкрий той самий проєкт (id з .env: TESTRAIL_PROJECT_ID) — якщо кейси/suites створити не можеш і там, через API теж буде 403.
-  • Потрібна роль з правами на проєкт: додавати **suites**, **sections**, **test cases** (зазвичай не Guest; часто Lead / Tester з повними правами / Admin).
-  • Адмін інстансу: *Administration* → *Users & Roles* → твій user → доступ до проєкту + роль з write до тестів.
-  • На спільних демо-інстансах (на кшталт eleksdemo) часто треба, щоб **адмін саме цього інстансу** додав тебе в проєкт або підвищив роль.
+TestRail 403 Forbidden — login/API key accepted but **no permission** for this action:
+  • In the web UI open the same project (TESTRAIL_PROJECT_ID from .env). If you cannot create cases/suites there, the API will also return 403.
+  • You need a project role that allows **suites**, **sections**, **test cases** (usually not Guest; often Lead / Tester with full access / Admin).
+  • Instance admin: *Administration* → *Users & Roles* → your user → project access + role with write access to tests.
+  • On shared demo instances (e.g. eleksdemo) an **instance admin** often must add you to the project or raise your role.
 
-Детальніше: [Suites / permissions](https://support.testrail.com/hc/en-us/articles/7077936624276-Suites)
+More: [Suites / permissions](https://support.testrail.com/hc/en-us/articles/7077936624276-Suites)
 `);
 }
 
 /**
- * TestRail Cloud часто повертає пагінований об’єкт { suites: [...] } / { sections: [...] },
- * а не «голий» масив (див. offset/limit у відповіді).
+ * TestRail Cloud often returns a paginated object { suites: [...] } / { sections: [...] },
+ * not a bare array (see offset/limit in the response).
  */
 function normalizeApiList(data, key) {
   if (Array.isArray(data)) return data;
@@ -108,9 +108,9 @@ export class TestRailClient {
   }
 
   /**
-   * TestRail очікує suite_id в тому ж «сегменті», що й project_id:
+   * TestRail expects suite_id in the same path segment style as project_id:
    * GET …/api/v2/get_sections/:project_id&suite_id=:id
-   * (?suite_id= ламає парсер URI на Cloud)
+   * (Cloud URI parser rejects ?suite_id= as query string.)
    */
   async getSections(projectId, suiteId) {
     let path = `get_sections/${projectId}`;

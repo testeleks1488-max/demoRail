@@ -255,7 +255,7 @@ Examples:
 
 ### "No issue link type with name 'Tests' found" (404 when linking Test to Story)
 Set **JIRA_LINK_TYPE_TEST_TO_STORY** to the exact link type name used in your Jira:
-1. In Jira open any issue and click **Link issue** (or "Зв'язати").
+1. In Jira open any issue and click **Link issue**.
 2. In the link type dropdown, find the type you use to link a test to a story/task (e.g. "Tests", "Test", "Covers", or a localized name).
 3. In `~/.cursor/mcp.json` (or env for sync-to-jira.js) set `JIRA_LINK_TYPE_TEST_TO_STORY` to that exact string.
 4. Restart Cursor and run sync again.

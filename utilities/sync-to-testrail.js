@@ -11,15 +11,15 @@
  *   TESTRAIL_EMAIL=you@example.com
  *   TESTRAIL_USER=login   (optional if login is not an email)
  *   TESTRAIL_API_KEY=...  (recommended: key as “password” in Basic auth)
- *   TESTRAIL_PASSWORD=... (alternative: real пароль входу, якщо API key не підходить)
+ *   TESTRAIL_PASSWORD=... (alternative: real login password if API key does not work)
  *   TESTRAIL_PROJECT_ID=2
  *   TESTRAIL_STORY_KEY=TES-1   (optional if set in each .md)
  *   TESTRAIL_SUITE_ID=...      (optional; highest priority if set)
  *   TESTRAIL_SUITE_NAME=...    (optional; find or create suite by name)
  *   TESTRAIL_SUITE_DESCRIPTION=... (optional; used when creating suite)
- *   TESTRAIL_SECTION_ID=...        (optional; id секції з UI/API — достатньо самого: suite підставиться з відповіді API)
+ *   TESTRAIL_SECTION_ID=...        (optional; section id from UI/API — enough alone: suite_id comes from API)
  *   TESTRAIL_SECTION_NAME=...      (optional; exact section name inside the chosen suite)
- *   TESTRAIL_TEMPLATE_ID=2         (optional; шаблон «Test Case (Steps)» для полів custom_steps_separated; інакше шукається за назвою)
+ *   TESTRAIL_TEMPLATE_ID=2         (optional; “Test Case (Steps)” template for custom_steps_separated; otherwise resolved by name)
  */
 
 import fs from 'fs';
@@ -51,7 +51,7 @@ function buildStepsPayload(steps) {
   return { custom_steps_separated: separated };
 }
 
-/** Якщо separated-поля не прийняв шаблон — єдиний текст для «Test Case (Text)». */
+/** Plain multi-line steps for “Test Case (Text)” when separated fields are rejected. */
 function buildCustomStepsPlain(preambleLines, steps) {
   const blocks = [];
   if (preambleLines.length) blocks.push(preambleLines.join('\n\n'));
@@ -67,7 +67,7 @@ function buildCustomStepsPlain(preambleLines, steps) {
 }
 
 /**
- * Steps template — для custom_steps_separated (не плутати з дефолтним «Test Case (Text)»).
+ * Resolves template ids: Steps (for custom_steps_separated) vs default Text template.
  * @returns {{ stepsTemplateId: number, textTemplateId: number }}
  */
 async function resolveCaseTemplateIds(client, projectId) {
@@ -144,13 +144,13 @@ async function main() {
   if (!projectId) {
     const hint =
       rawProjectId === undefined
-        ? '(змінної TESTRAIL_PROJECT_ID немає в середовищі — перевір збережений .env у корені репо)'
-        : `(зчитано: ${JSON.stringify(rawProjectId)} — має бути число, наприклад 2)`;
+        ? '(TESTRAIL_PROJECT_ID is missing from the environment — save .env at repo root)'
+        : `(read value: ${JSON.stringify(rawProjectId)} — must be a number, e.g. 2)`;
     console.error(
-      'Потрібен TESTRAIL_PROJECT_ID — числовий id проєкту TestRail (Administration → Projects або URL проєкту).\n' +
+      'Set TESTRAIL_PROJECT_ID — numeric TestRail project id (Administration → Projects or project URL).\n' +
         `  ${hint}\n` +
-        '  Збережіть .env (Ctrl+S) і запускайте з кореня jira-qa-space: npm run sync-testrail\n' +
-        '  Перевірка: npm run testrail-ping'
+        '  Save .env (Ctrl+S) and run from jira-qa-space root: npm run sync-testrail\n' +
+        '  Quick check: npm run testrail-ping'
     );
     process.exit(1);
   }
@@ -170,14 +170,14 @@ async function main() {
     }
     if (String(e.message).includes('401')) {
       console.error(`
-TestRail 401 — перевір по черзі:
-  1) My Settings → API Keys: після створення ключа натисни Save Settings.
-  2) Логін для API = той самий, що в TestRail (іконка профілю → звичайно email). Якщо там не email — додай у .env: TESTRAIL_USER=точний_логін
-  3) Або спробуй у .env замість ключа: TESTRAIL_PASSWORD=твій_пароль_входу_в_TestRail (той самий логін + пароль, що в браузері).
-  4) Ключ скопійований повністю, без зайвої крапки в кінці.
-  5) Адмін інстансу: увімкнено доступ до API.
+TestRail 401 — check in order:
+  1) My Settings → API Keys: after creating a key, click Save Settings.
+  2) API login = your TestRail login (profile → usually email). If not email, set in .env: TESTRAIL_USER=exact_login
+  3) Or try in .env: TESTRAIL_PASSWORD=your_TestRail_login_password (same as browser).
+  4) API key copied fully, no stray trailing dot.
+  5) Instance admin: API access enabled.
 
-Швидка перевірка: npm run testrail-ping
+Quick check: npm run testrail-ping
 `);
     }
     throw e;
@@ -198,27 +198,27 @@ TestRail 401 — перевір по черзі:
   );
   const suiteNameWanted = (process.env.TESTRAIL_SUITE_NAME || '').trim();
 
-  /** Якщо в .env є id секції — suite беремо з API (get_section), без get_suites / створення suite. */
+  /** If TESTRAIL_SECTION_ID is set, resolve suite via get_section (no get_suites / create suite). */
   let sectionIdFromEnvMode = null;
   if (sectionIdEnvEarly) {
     const sec = await client.getSection(sectionIdEnvEarly);
     const secProject = sec.project_id != null ? Number(sec.project_id) : null;
     if (secProject != null && secProject !== projectId) {
       console.error(
-        `Секція ${sectionIdEnvEarly} належить проєкту id ${secProject}, а в .env TESTRAIL_PROJECT_ID=${projectId}. Виправ один із id.`
+        `Section ${sectionIdEnvEarly} belongs to project id ${secProject}, but .env has TESTRAIL_PROJECT_ID=${projectId}. Fix one of the ids.`
       );
       process.exit(1);
     }
     const derivedSuite = Number(sec.suite_id);
     if (suiteId && suiteId !== derivedSuite) {
       console.warn(
-        `TESTRAIL_SUITE_ID=${suiteId} не збігається з suite цієї секції (${derivedSuite}) — використовую suite з секції.`
+        `TESTRAIL_SUITE_ID=${suiteId} does not match this section's suite (${derivedSuite}) — using suite from section.`
       );
     }
     suiteId = derivedSuite;
     sectionIdFromEnvMode = sec.id;
     console.log(
-      `Режим «тільки секція»: "${sec.name}" (section id ${sectionIdFromEnvMode}), suite id ${suiteId} (з API; TESTRAIL_SUITE_* не обов’язкові).`
+      `Section-only mode: "${sec.name}" (section id ${sectionIdFromEnvMode}), suite id ${suiteId} (from API; TESTRAIL_SUITE_* optional).`
     );
   } else if (!suiteId) {
     const suites = await client.getSuites(projectId);
@@ -236,19 +236,19 @@ TestRail 401 — перевір по черзі:
         } catch (err) {
           printTestRailPermissionHint(err);
           console.warn(
-            `\nНе вдалося створити suite через API (часто в TestRail право «додати кейс» є, а «створити suite» — ні).\n` +
-              `Помилка: ${err.message}\n`
+            `\nCould not create suite via API (often you may add cases but not create suites).\n` +
+              `Error: ${err.message}\n`
           );
           if (list.length) {
             suite = list[0];
             console.warn(
-              `→ Використовую першу наявну suite: "${suite.name}" (id ${suite.id}). ` +
-                `Щоб зафіксувати: додай у .env TESTRAIL_SUITE_ID=${suite.id} і прибери TESTRAIL_SUITE_NAME.\n`
+              `→ Using first existing suite: "${suite.name}" (id ${suite.id}). ` +
+                `Pin it in .env: TESTRAIL_SUITE_ID=${suite.id} and remove TESTRAIL_SUITE_NAME.\n`
             );
           } else {
             console.error(
-              'Немає жодної suite у проєкті для fallback. Попроси Lead/Admin створити **одну** suite в UI (або дати право на add suite).\n' +
-                '  Або вкажи наявну секцію: TESTRAIL_SECTION_ID=... (id з URL/UI) — тоді suite підставиться автоматично.'
+              'No suite in project for fallback. Ask a Lead/Admin to create **one** suite in the UI (or grant add suite permission).\n' +
+                '  Or set an existing section: TESTRAIL_SECTION_ID=... (id from URL/UI) — suite_id is resolved from the API.'
             );
             process.exit(1);
           }
@@ -261,9 +261,9 @@ TestRail 401 — перевір по черзі:
       console.log(`Using suite: ${list[0].name} (id ${suiteId})`);
     } else {
       console.error(
-        'У проєкті немає жодної suite, а в збереженому .env не задано TESTRAIL_SUITE_NAME / TESTRAIL_SUITE_ID.\n' +
-          '  • Додай TESTRAIL_SECTION_ID=... (id твоєї секції з TestRail) — suite підставиться з API, або\n' +
-          '  • створи suite в UI / задай TESTRAIL_SUITE_NAME / TESTRAIL_SUITE_ID і збережи .env (Ctrl+S).'
+        'Project has no suite and saved .env has no TESTRAIL_SUITE_NAME / TESTRAIL_SUITE_ID.\n' +
+          '  • Add TESTRAIL_SECTION_ID=... (your section id from TestRail) — suite_id comes from the API, or\n' +
+          '  • create a suite in the UI / set TESTRAIL_SUITE_NAME or TESTRAIL_SUITE_ID and save .env (Ctrl+S).'
       );
       process.exit(1);
     }
@@ -295,11 +295,11 @@ TestRail 401 — перевір по черзі:
     const list = sections || [];
     if (list.length) {
       console.log(
-        `Секції в поточній suite (${suiteId}):\n` +
+        `Sections in suite ${suiteId}:\n` +
           list.map((s) => `  id=${s.id}  "${s.name}"`).join('\n')
       );
     } else {
-      console.log(`У suite ${suiteId} поки немає секцій — скрипт створить нову.`);
+      console.log(`Suite ${suiteId} has no sections yet — the script will create one.`);
     }
 
     let section = null;
@@ -307,7 +307,7 @@ TestRail 401 — перевір по черзі:
       section = list.find((s) => s.name === sectionNameEnv);
       if (!section) {
         console.error(
-          `Секції з точною назвою "${sectionNameEnv}" немає в цій suite. Вибери id зі списку вище → TESTRAIL_SECTION_ID=... або виправ назву.`
+          `No section named exactly "${sectionNameEnv}" in this suite. Pick an id from the list above → TESTRAIL_SECTION_ID=... or fix the name.`
         );
         process.exit(1);
       }
@@ -340,7 +340,7 @@ TestRail 401 — перевір по черзі:
 
   const { stepsTemplateId, textTemplateId } = await resolveCaseTemplateIds(client, projectId);
   console.log(
-    `Templates: «Steps» id ${stepsTemplateId} (для кроків), дефолтний текстовий id ${textTemplateId}`
+    `Templates: Steps id ${stepsTemplateId} (for separated steps), default Text id ${textTemplateId}`
   );
 
   let created = 0;

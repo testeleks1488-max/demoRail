@@ -1,11 +1,15 @@
 # Dependencies
 node_modules/
-package-lock.json
+
+# Lockfiles: commit package-lock.json / yarn.lock for reproducible installs
 
 # Environment and secrets
 .env
+.env.*
+!.env.example
+!.env.*.example
 .env.local
-.env.*.local
+# Local MCP/Jira config (never commit); examples use *.example.json
 config.json
 *.pem
 *.key
@@ -18,7 +22,10 @@ config.json
 
 # OS
 .DS_Store
+desktop.ini
+Desktop.ini
 Thumbs.db
+ehthumbs.db
 
 # Logs
 *.log
@@ -28,9 +35,10 @@ npm-debug.log*
 dist/
 build/
 
-# Token files
+# Tokens / cache
 access_token.txt
 token.json
+.cache/
 
 # Test output
 test-results/
