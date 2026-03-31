@@ -1,0 +1,261 @@
+---
+alwaysApply: true
+---
+
+# QA File Templates Rules
+
+## Overview
+Defines file templates for test documentation in the QA repository.
+
+## Test Case Template
+
+### File: `templates/test-case-template.md`
+
+```markdown
+# [TC] {ISSUE_KEY} - {FEATURE} - {TEST_NAME}
+
+## Jira Reference
+- **Issue Key**: [To be created]
+- **URL**: [To be created]
+- **Sync Status**: ⏳ Pending sync
+
+## User Story Reference
+- **Story Key**: {STORY_KEY}
+- **Story URL**: {STORY_URL}
+- **Story Title**: {STORY_TITLE}
+
+## Summary
+**Description**: {TEST_DESCRIPTION}
+
+**AC Coverage**: {AC_REFERENCE}
+
+**Test Data Summary**:
+- **Test URL**: {TEST_URL}
+- **Test User**: {TEST_USER}
+- **Expected Values**: {EXPECTED_VALUES}
+
+## Priority
+**Priority**: {PRIORITY} (P1/P2/P3/P4)
+
+## Labels
+- story-{story-key}
+- {feature-label}
+- {priority-label}
+- {automation-label}
+
+## Preconditions
+1. {PRECONDITION_1}
+2. {PRECONDITION_2}
+
+## Test Steps
+
+| # | Step | Expected Result |
+|---|------|-----------------|
+| 1 | {STEP_1} | {RESULT_1} |
+| 2 | {STEP_2} | {RESULT_2} |
+| 3 | {STEP_3} | {RESULT_3} |
+
+## Notes
+{ADDITIONAL_NOTES}
+```
+
+**Test Steps (sync):** Use 3 or 4 columns: Step, optional Test Data, Expected Result. Parser expects this order.
+
+## Test Suite Template (Story Level)
+
+### File: `templates/test-suite-template.md`
+
+```markdown
+# Test Suite: {ISSUE_KEY} - {STORY_TITLE}
+
+## Jira Reference
+- **Issue Type**: Story
+- **Issue Key**: {ISSUE_KEY}
+- **URL**: {JIRA_URL}
+- **Status**: {STATUS}
+
+## Parent Reference
+- **Epic Key**: {EPIC_KEY}
+- **Epic Title**: {EPIC_TITLE}
+- **Epic URL**: {EPIC_URL}
+
+## Description
+{STORY_DESCRIPTION}
+
+## Acceptance Criteria
+### AC1: {AC1_TITLE}
+{AC1_DESCRIPTION}
+
+### AC2: {AC2_TITLE}
+{AC2_DESCRIPTION}
+
+## Test Coverage Summary
+
+| AC | Test Cases | Status |
+|----|------------|--------|
+| AC1 | [TC] {KEY} - Test 1, [TC] {KEY} - Test 2 | ⏳ Pending |
+| AC2 | [TC] {KEY} - Test 3 | ⏳ Pending |
+
+## Test Cases
+- [ ] [TC] {ISSUE_KEY} - Prerequisites - Setup
+- [ ] [TC] {ISSUE_KEY} - {Feature} - Test 1
+- [ ] [TC] {ISSUE_KEY} - {Feature} - Test 2
+- [ ] [TC] {ISSUE_KEY} - {Feature} - Test 3
+
+## Test Plan Reference
+- **Test Plan Key**: [To be assigned]
+- **Test Plan URL**: [To be assigned]
+```
+
+## Test Plan Template (Epic Level)
+
+### File: `templates/test-plan-template.md`
+
+```markdown
+# Test Plan: {EPIC_KEY} - {EPIC_TITLE}
+
+## Jira Reference
+- **Issue Type**: Epic
+- **Issue Key**: {EPIC_KEY}
+- **URL**: {JIRA_URL}
+- **Status**: {STATUS}
+
+## Project Reference
+- **Project Key**: {PROJECT_KEY}
+- **Project Name**: {PROJECT_NAME}
+
+## Description
+{EPIC_DESCRIPTION}
+
+## Scope
+### In Scope
+- {SCOPE_ITEM_1}
+- {SCOPE_ITEM_2}
+
+### Out of Scope
+- {OUT_OF_SCOPE_1}
+
+## User Stories
+
+| Story Key | Title | Test Cases | Status |
+|-----------|-------|------------|--------|
+| {STORY_KEY_1} | {STORY_TITLE_1} | {COUNT} | ⏳ |
+| {STORY_KEY_2} | {STORY_TITLE_2} | {COUNT} | ⏳ |
+
+## Test Environment
+- **Environment**: {ENVIRONMENT}
+- **URL**: {ENV_URL}
+- **Browser**: {BROWSER}
+
+## Test Data Requirements
+- {DATA_REQ_1}
+- {DATA_REQ_2}
+
+## Xray Test Plan Reference
+- **Test Plan Key**: [To be created]
+- **Test Plan URL**: [To be created]
+```
+
+## Prerequisites Template
+
+### File: `templates/prerequisites-template.md`
+
+```markdown
+# [TC] {ISSUE_KEY} - {FEATURE} - Prerequisites - Setup
+
+## Jira Reference
+- **Issue Key**: [To be created]
+- **URL**: [To be created]
+- **Sync Status**: ⏳ Pending sync
+
+## User Story Reference
+- **Story Key**: {STORY_KEY}
+- **Story URL**: {STORY_URL}
+
+## Summary
+**Description**: Common setup steps required for all test cases in this suite.
+
+**Purpose**: Prerequisite setup
+
+## Priority
+**Priority**: P1
+
+## Labels
+- story-{story-key}
+- prerequisites
+- {feature-label}
+
+## Setup Steps
+
+| # | Step | Expected Result |
+|---|------|-----------------|
+| 1 | Open browser (Chrome latest) | Browser opens |
+| 2 | Navigate to {APP_URL} | Application loads |
+| 3 | {ADDITIONAL_SETUP} | {SETUP_RESULT} |
+
+## Test Data Preparation
+
+### Required Data
+| Data Item | Value | Notes |
+|-----------|-------|-------|
+| Test User | {USER_EMAIL} | {NOTES} |
+| Password | {PASSWORD} | Use test credentials |
+
+### Data Cleanup
+- {CLEANUP_STEP_1}
+- {CLEANUP_STEP_2}
+
+## Notes
+- These steps are required before running any test case in this suite
+- Run this setup once per test session
+```
+
+## Template Placeholders
+
+### Standard Placeholders
+| Placeholder | Description | Example |
+|-------------|-------------|---------|
+| `{ISSUE_KEY}` | Jira issue key | PROJ-123 |
+| `{STORY_KEY}` | User story key | PROJ-101 |
+| `{EPIC_KEY}` | Epic key | PROJ-100 |
+| `{PROJECT_KEY}` | Project key | PROJ |
+| `{FEATURE}` | Feature name | Authentication |
+| `{TEST_NAME}` | Test name | Verify Valid Credentials |
+| `{PRIORITY}` | Priority level | P1, P2, P3, P4 |
+| `{AC_REFERENCE}` | AC reference | AC1, AC2 |
+| `{JIRA_URL}` | Full Jira URL | https://domain.atlassian.net/browse/PROJ-123 |
+
+### Status Placeholders
+| Placeholder | Values |
+|-------------|--------|
+| `{STATUS}` | To Do, In Progress, Done |
+| `{SYNC_STATUS}` | ⏳ Pending, ✅ Synced, ❌ Failed |
+
+## Template Usage
+
+### Creating New Test Case
+1. Copy `templates/test-case-template.md`
+2. Rename to `[TC] {KEY} - {Feature} - {Name}.md`
+3. Replace all placeholders
+4. Save in appropriate `test-cases/` folder
+
+### Creating New Test Suite
+1. Copy `templates/test-suite-template.md`
+2. Rename to `{ISSUE_KEY}.md`
+3. Replace all placeholders
+4. Save in story folder
+
+## Validation Rules
+
+### Required Fields
+- [ ] Issue Key populated
+- [ ] Story reference complete
+- [ ] At least one test step
+- [ ] Expected results for each step
+- [ ] Priority assigned
+- [ ] Labels assigned
+
+### Format Validation
+- Issue keys: `[A-Z]+-\d+` (e.g., PROJ-123)
+- Labels: lowercase with hyphens
+- Priority: P1, P2, P3, or P4

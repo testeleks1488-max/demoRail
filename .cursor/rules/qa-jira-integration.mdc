@@ -1,0 +1,182 @@
+---
+alwaysApply: true
+---
+
+# QA Jira Integration Rules
+
+## Overview
+Defines Jira integration rules for QA test case management with Xray.
+
+## MANDATORY COMPLIANCE RULES
+1. **NEVER skip URL checking** - Always examine the URL field first
+2. **NEVER create issues without checking existing URLs** - This causes duplicates
+3. **ALWAYS verify API responses** - Check if creation was successful
+4. **ALWAYS provide Jira links** after creation
+5. **ALWAYS link test cases to user stories** using "Tests" relationship
+6. **ALWAYS extract issue keys from Jira Reference section** in files
+
+## Jira URL Formats
+- **Issue URLs**: `https://[domain].atlassian.net/browse/[KEY]`
+- **Project URLs**: `https://[domain].atlassian.net/jira/software/projects/[KEY]/boards/[ID]`
+
+## Synchronization Process
+
+### MANDATORY: Synchronization Scope Clarification
+**BEFORE starting any synchronization, ALWAYS clarify the scope:**
+
+1. **If user says "sync file" (singular):**
+   - Ask: "Do you want to sync only the currently selected file, or all files under this structure?"
+   - Wait for user clarification before proceeding
+
+2. **If user says "sync files" (plural) or "sync all":**
+   - Proceed with syncing entire hierarchical structure
+
+3. **If user specifies a particular file path:**
+   - Sync only the specified file
+
+### Step 1: URL Analysis
+**Check the URL field in the file:**
+- **Empty or placeholder URL** (`*To be populated*`): → CREATE new issue
+- **Valid Jira URL** (`https://[domain].atlassian.net/browse/...`): → NO ACTION (skip)
+
+### Step 2: Decision Matrix
+| URL Status | Action Required | Next Step |
+|------------|-----------------|-----------|
+| Empty or missing | **CREATE** new issue | Go to Step 3 |
+| `*To be populated*` | **CREATE** new issue | Go to Step 3 |
+| Valid Jira URL | **NO ACTION** (skip) | End process |
+
+### Step 3: CREATE New Issue
+**For Tests:**
+1. Use `jira_create_test` MCP tool with:
+   - `projectKey`: Extract from existing reference
+   - `summary`: Test case title
+   - `description`: Test case description
+   - `labels`: Array of labels
+2. **VERIFY API RESPONSE**: Check if creation was successful
+3. **MANDATORY**: Add test steps using `xray_add_test_steps`
+4. **MANDATORY**: Link to User Story using `jira_link_test_to_story`
+
+**For Test Plans:**
+1. Use `jira_create_test_plan` MCP tool
+2. **VERIFY API RESPONSE**
+3. Add tests to plan using `xray_add_tests_to_plan`
+
+**For Test Sets:**
+1. Use `jira_create_test_set` MCP tool
+2. Add tests using `xray_add_tests_to_set`
+
+### Step 4: File Update
+1. **Update file with new Jira URL** (for CREATE operations only)
+2. **Verify file is properly updated**
+
+### Step 5: Link Provision
+**ALWAYS provide the Jira link at the end of response:**
+- Format: **🔗 Link to [Issue Type] [KEY]:** [clickable Jira URL]
+- Example: **🔗 Link to Test PROJ-123:** [https://your-domain.atlassian.net/browse/PROJ-123](https://your-domain.atlassian.net/browse/PROJ-123)
+
+## Test Case Content Sync Requirements
+
+### 1. Test Steps (MANDATORY)
+- Use `xray_add_test_steps` MCP tool
+- Each step must have: action, data (optional), result
+- Steps format:
+```json
+{
+  "steps": [
+    { "action": "Navigate to login page", "data": "", "result": "Login page is displayed" },
+    { "action": "Enter valid credentials", "data": "user@test.com", "result": "Credentials accepted" }
+  ]
+}
+```
+
+### 2. Labels (MANDATORY)
+- Include all labels from local file
+- Format: lowercase with hyphens (e.g., `story-proj-123`, `to-automate`)
+- Use `jira_add_labels` if not added during creation
+
+### 3. Description Sync
+- Include complete description in issue creation
+- Use Atlassian Document Format (ADF) for rich text
+
+## Linking Logic Rules
+- **Test → Story Link**: Use "Tests" link type
+- **Test → Test Plan**: Use `xray_add_tests_to_plan`
+- **Test → Test Set**: Use `xray_add_tests_to_set`
+- **Test → Test Execution**: Use `xray_add_tests_to_execution`
+
+## MCP Tools Reference
+
+### Get Issue Details
+```javascript
+// Get user story details
+jira_get_issue({ issueKey: "PROJ-123" })
+```
+
+### Create Test
+```javascript
+jira_create_test({
+  projectKey: "PROJ",
+  summary: "[TC] PROJ-123 - Login - Verify Valid Credentials",
+  description: "Test case description...",
+  labels: ["story-proj-123", "to-automate", "priority-p1"]
+})
+```
+
+### Add Test Steps
+```javascript
+xray_add_test_steps({
+  testKey: "PROJ-456",
+  steps: [
+    { action: "Open browser", data: "", result: "Browser opens" },
+    { action: "Navigate to URL", data: "https://app.example.com", result: "Page loads" }
+  ]
+})
+```
+
+### Link Test to Story
+```javascript
+jira_link_test_to_story({
+  testKey: "PROJ-456",
+  storyKey: "PROJ-123"
+})
+```
+
+## Content Validation Checklist
+After each test case creation, verify:
+
+- [ ] **Test Steps**: All steps appear in Xray
+- [ ] **Expected Results**: All results are populated
+- [ ] **Labels**: All labels appear in Jira
+- [ ] **Description**: Complete description synced
+- [ ] **User Story Link**: Test is linked to story
+- [ ] **Local File URLs**: File updated with Jira URLs
+
+## Common Issues and Solutions
+
+### Issue 1: Missing Test Steps
+**Problem**: Test steps don't appear in Xray
+**Solution**: 
+- Use `xray_add_test_steps` after test creation
+- Verify Xray API authentication is valid
+
+### Issue 2: Missing Labels
+**Problem**: Labels don't appear in Jira
+**Solution**:
+- Include labels in initial creation
+- Use `jira_add_labels` as fallback
+
+### Issue 3: Link Not Created
+**Problem**: Test not linked to User Story
+**Solution**:
+- Use `jira_link_test_to_story` after creation
+- Verify both issue keys are correct
+
+## Compliance Checklist
+- [ ] URL field has been checked (CREATE vs SKIP)
+- [ ] API response validated
+- [ ] Test steps added via Xray API
+- [ ] Labels added to issue
+- [ ] Test linked to User Story
+- [ ] Jira links provided in response
+- [ ] Local files updated with URLs

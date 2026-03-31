@@ -1,0 +1,181 @@
+---
+alwaysApply: true
+---
+
+# QA Repository Structure Rules
+
+## Overview
+Defines repository structure rules for QA test case management with Jira/Xray.
+
+## Repository Structure
+
+### Top-Level Structure
+```
+jira-qa-space/
+├── .cursor/
+│   └── rules/                    # Cursor rules
+├── utilities/
+│   ├── jira-mcp-server/          # MCP server
+│   └── README.md
+├── test-plans/
+│   └── [Project-Key]/            # Test plans by project
+├── templates/                     # File templates
+├── .gitignore
+├── README.md
+└── package.json
+```
+
+### Test Plans Structure
+```
+test-plans/
+└── [Project-Key]/
+    ├── [Project-Key].md          # Project overview
+    └── [Epic-Key]/
+        ├── [Epic-Key].md         # Epic test suite
+        └── [Story-Key]/
+            ├── [Story-Key].md    # Story test suite
+            └── test-cases/
+                └── [TC] *.md     # Individual test cases
+```
+
+### Example Structure
+```
+test-plans/
+└── PROJ/
+    ├── PROJ.md
+    └── PROJ-100/
+        ├── PROJ-100.md
+        ├── PROJ-101/
+        │   ├── PROJ-101.md
+        │   └── test-cases/
+        │       ├── [TC] PROJ-101 - Login - Verify Valid Credentials.md
+        │       ├── [TC] PROJ-101 - Login - Verify Invalid Password.md
+        │       └── [TC] PROJ-101 - Login - Prerequisites - Setup.md
+        └── PROJ-102/
+            ├── PROJ-102.md
+            └── test-cases/
+                └── [TC] PROJ-102 - Registration - Verify Success.md
+```
+
+## Folder Naming Conventions
+
+### Project Level
+- **Name**: Project Key (e.g., `PROJ`)
+- **Content**: Project overview and settings
+
+### Epic Level
+- **Name**: Epic Issue Key (e.g., `PROJ-100`)
+- **Content**: Epic description and test suite overview
+
+### Story Level
+- **Name**: Story Issue Key (e.g., `PROJ-101`)
+- **Content**: Story test suite
+
+### Test Cases Level
+- **Folder Name**: Always `test-cases`
+- **Content**: Individual test case files
+
+## File Naming Conventions
+
+### Project File
+```
+[Project-Key].md
+Example: PROJ.md
+```
+
+### Epic/Story File
+```
+[Issue-Key].md
+Example: PROJ-100.md, PROJ-101.md
+```
+
+### Test Case File
+```
+[TC] [Issue-Key] - [Feature] - [Test Name].md
+Example: [TC] PROJ-101 - Login - Verify Valid Credentials.md
+```
+
+### Prerequisites File
+```
+[TC] [Issue-Key] - [Feature] - Prerequisites - Setup.md
+Example: [TC] PROJ-101 - Login - Prerequisites - Setup.md
+```
+
+## Automatic Structure Creation
+
+### From User Story URL
+Use MCP tool `jira_get_story_hierarchy(issueKey)` to get `projectKey`, `epicKey`, `storyKey`, and `folderPath`. Create the folder structure using the returned `folderPath`. Epic is taken from Jira `parent` field; if no parent, `epicKey` equals `storyKey` (fallback path: `test-plans/PROJ/STORY/test-cases/`).
+
+## File Templates Location
+
+### Templates Directory
+```
+templates/
+├── test-case-template.md
+├── test-suite-template.md
+├── test-plan-template.md
+└── prerequisites-template.md
+```
+
+### Template Usage
+- Copy template when creating new file
+- Replace placeholders with actual values
+- Follow template structure
+
+## Quick Reference
+
+### Common Commands
+```bash
+# Create project structure
+mkdir -p "test-plans/PROJ"
+
+# Create epic structure
+mkdir -p "test-plans/PROJ/PROJ-100"
+
+# Create story structure with test-cases
+mkdir -p "test-plans/PROJ/PROJ-100/PROJ-101/test-cases"
+```
+
+### Finding Files
+```bash
+# Find all test cases for a story
+ls "test-plans/PROJ/PROJ-100/PROJ-101/test-cases/"
+
+# Find all test suites
+find test-plans -name "*.md" -not -path "*/test-cases/*"
+
+# Find all test cases
+find test-plans -path "*/test-cases/*.md"
+```
+
+## Hierarchy Mapping
+
+| Jira Level | Repository Level | File Type |
+|------------|-----------------|-----------|
+| Project | `test-plans/[KEY]/` | [KEY].md |
+| Epic | `test-plans/[PROJ]/[EPIC]/` | [EPIC].md |
+| Story | `test-plans/[PROJ]/[EPIC]/[STORY]/` | [STORY].md |
+| Test Case | `test-plans/.../test-cases/` | [TC] *.md |
+
+## Special Files
+
+### .gitkeep
+Place in empty directories to preserve structure:
+```
+test-plans/.gitkeep
+```
+
+### Index Files
+Each level can have an index file:
+```
+test-plans/PROJ/PROJ.md           # Project index
+test-plans/PROJ/PROJ-100/PROJ-100.md  # Epic index
+```
+
+## Migration Notes
+
+### From Azure DevOps Structure
+If migrating from Azure DevOps qa-space:
+- Replace Work Item IDs with Jira Issue Keys
+- Update URL formats
+- Adjust field mappings

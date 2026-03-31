@@ -1,0 +1,19 @@
+{
+  "jira": {
+    "baseUrl": "https://your-domain.atlassian.net",
+    "email": "your-email@example.com",
+    "apiToken": "your-api-token-here"
+  },
+  "xray": {
+    "cloudBaseUrl": "https://xray.cloud.getxray.app",
+    "clientId": "your-xray-client-id",
+    "clientSecret": "your-xray-client-secret"
+  },
+  "defaults": {
+    "projectKey": "YOUR_PROJECT_KEY",
+    "testIssueType": "Test",
+    "testPlanIssueType": "Test Plan",
+    "testExecutionIssueType": "Test Execution",
+    "testSetIssueType": "Test Set"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "jira-qa-space",
+  "version": "1.0.0",
+  "description": "QA Test Case Management Framework with Jira/Xray integration via MCP",
+  "main": "utilities/jira-mcp-server/index.js",
+  "scripts": {
+    "start-mcp": "node utilities/jira-mcp-server/index.js",
+    "sync-testrail": "node utilities/sync-to-testrail.js --dir \"test-plans/TES/TES-1/test-cases\"",
+    "testrail-ping": "node utilities/testrail-ping.js",
+    "testrail-create-suite": "node utilities/testrail-create-suite.js",
+    "test": "echo \"No tests configured yet\" && exit 0"
+  },
+  "type": "module",
+  "keywords": [
+    "jira",
+    "xray",
+    "qa",
+    "test-management",
+    "mcp",
+    "cursor"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}

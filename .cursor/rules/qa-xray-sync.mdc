@@ -1,0 +1,251 @@
+---
+alwaysApply: true
+---
+
+# QA Xray Synchronization Rules
+
+## Overview
+Defines rules for synchronizing test cases with Xray Test Management in Jira Cloud.
+
+## Xray Issue Types
+
+### Custom Xray mapping (Test → Story)
+Some projects map Xray **Test** to Jira issue type **Story** (not "Test"). For that setup:
+- Set **JIRA_TEST_ISSUE_TYPE** = `Story` in MCP/server env so tests are created as Story issues.
+- Set **JIRA_LINK_TYPE_TEST_TO_STORY** to the **exact** link type name from Jira (Jira → any issue → Link issue → use the type you use to link test to story; copy that name into env). If the name is wrong you get: `No issue link type with name 'Tests' found`.
+
+### Test
+- **Purpose**: Individual test case
+- **Jira Issue Type**: `Test` (or `Story` when using custom mapping above)
+- **Key Fields**: Summary, Description, Test Type, Test Steps
+- **Test Types**: Manual, Cucumber, Generic
+
+### Test Plan
+- **Purpose**: Collection of tests for a release/sprint
+- **Jira Issue Type**: `Test Plan`
+- **Contains**: Multiple Tests
+- **Key Fields**: Summary, Description, Fix Version
+
+### Test Execution
+- **Purpose**: Instance of running tests
+- **Jira Issue Type**: `Test Execution`
+- **Contains**: Tests with execution status
+- **Key Fields**: Summary, Description, Environment, Fix Version
+
+### Test Set
+- **Purpose**: Reusable group of tests
+- **Jira Issue Type**: `Test Set`
+- **Contains**: Multiple Tests
+- **Use Case**: Regression suite, smoke tests
+
+## Test Steps Format
+
+### Xray Cloud API Format
+```json
+{
+  "steps": [
+    {
+      "action": "Step action description",
+      "data": "Test data for this step",
+      "result": "Expected result"
+    }
+  ]
+}
+```
+
+### Mapping from Local File
+| Local File Field | Xray Field |
+|-----------------|------------|
+| Test Step | action |
+| Test Data | data |
+| Expected Result | result |
+
+## Synchronization Workflow
+
+### 1. Create Test in Jira
+```javascript
+// Step 1: Create the test issue
+const test = await jira_create_test({
+  projectKey: "PROJ",
+  summary: "[TC] PROJ-123 - Feature - Test Name",
+  description: "Description from local file",
+  labels: ["story-proj-123", "to-automate"]
+});
+```
+
+### 2. Add Test Steps
+```javascript
+// Step 2: Add steps via Xray API
+await xray_add_test_steps({
+  testKey: test.key,
+  steps: [
+    { action: "Open application", data: "", result: "Application opens" },
+    { action: "Click login button", data: "", result: "Login form appears" }
+  ]
+});
+```
+
+### 3. Link to User Story
+```javascript
+// Step 3: Create Tests relationship
+await jira_link_test_to_story({
+  testKey: test.key,
+  storyKey: "PROJ-123"
+});
+```
+
+### 4. Add to Test Plan (Optional)
+```javascript
+// Step 4: Add to existing test plan
+await xray_add_tests_to_plan({
+  testPlanKey: "PROJ-456",
+  testKeys: [test.key]
+});
+```
+
+## Test Plan Synchronization
+
+### Create Test Plan
+```javascript
+const testPlan = await jira_create_test_plan({
+  projectKey: "PROJ",
+  summary: "Sprint 5 - Authentication Tests",
+  description: "Test plan for authentication feature"
+});
+```
+
+### Add Tests to Plan
+```javascript
+await xray_add_tests_to_plan({
+  testPlanKey: testPlan.key,
+  testKeys: ["PROJ-101", "PROJ-102", "PROJ-103"]
+});
+```
+
+## Test Execution Synchronization
+
+### Create Test Execution
+```javascript
+const execution = await jira_create_test_execution({
+  projectKey: "PROJ",
+  summary: "Sprint 5 - Execution 1",
+  description: "Test execution for sprint 5"
+});
+```
+
+### Add Tests to Execution
+```javascript
+await xray_add_tests_to_execution({
+  testExecutionKey: execution.key,
+  testKeys: ["PROJ-101", "PROJ-102"]
+});
+```
+
+## Test Set Synchronization
+
+### Create Test Set
+```javascript
+const testSet = await jira_create_test_set({
+  projectKey: "PROJ",
+  summary: "Regression - Login Module",
+  description: "Regression tests for login functionality"
+});
+```
+
+### Add Tests to Set
+```javascript
+await xray_add_tests_to_set({
+  testSetKey: testSet.key,
+  testKeys: ["PROJ-101", "PROJ-102", "PROJ-103"]
+});
+```
+
+## Label Conventions for Xray
+
+### Standard Labels
+| Label | Purpose |
+|-------|---------|
+| `story-{key}` | Links to user story |
+| `to-automate` | Marked for automation |
+| `automated` | Already automated |
+| `regression` | Part of regression suite |
+| `smoke` | Part of smoke tests |
+| `priority-p1` | Priority 1 (Critical) |
+| `priority-p2` | Priority 2 (High) |
+| `priority-p3` | Priority 3 (Medium) |
+| `priority-p4` | Priority 4 (Low) |
+
+### Feature Labels
+| Label | Purpose |
+|-------|---------|
+| `authentication` | Auth-related tests |
+| `user-management` | User management tests |
+| `api` | API tests |
+| `ui` | UI tests |
+
+## Xray Authentication
+
+### Cloud Authentication
+Xray Cloud requires separate authentication:
+1. Create API credentials in Xray Cloud settings
+2. Get Client ID and Client Secret
+3. Configure in MCP server environment
+
+### Environment Variables
+```
+XRAY_CLOUD_URL=https://xray.cloud.getxray.app
+XRAY_CLIENT_ID=your-client-id
+XRAY_CLIENT_SECRET=your-client-secret
+```
+
+## Sync Status Tracking
+
+### Local File Status Markers
+- `⏳ Pending sync` - Not yet synced to Jira
+- `✅ Synced` - Successfully synced
+- `❌ Sync failed` - Sync error occurred
+- `🔄 Update needed` - Local changes pending sync
+
+### File Update After Sync
+```markdown
+## Jira Reference
+- **Issue Key**: PROJ-456
+- **URL**: https://your-domain.atlassian.net/browse/PROJ-456
+- **Sync Status**: ✅ Synced
+- **Last Sync**: 2026-02-12T10:30:00Z
+```
+
+## Error Handling
+
+### Common Errors
+
+#### Authentication Error
+```
+Error: Xray authentication failed: 401
+```
+**Solution**: Refresh Xray API credentials
+
+#### Issue Not Found
+```
+Error: Issue PROJ-999 not found
+```
+**Solution**: Verify issue key is correct
+
+#### Permission Denied
+```
+Error: You do not have permission to create issues
+```
+**Solution**: Check project permissions
+
+### Retry Strategy
+1. Retry up to 3 times with exponential backoff
+2. Log error details for debugging
+3. Report failure clearly to user
+
+## Best Practices
+
+1. **Always verify sync** - Check Jira after sync
+2. **Keep local files updated** - Update URLs after sync
+3. **Use consistent labels** - Follow label conventions
+4. **Link all tests** - Always link to user stories
+5. **Add to test plans** - Organize tests in plans

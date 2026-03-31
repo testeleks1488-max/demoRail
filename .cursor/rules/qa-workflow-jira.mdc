@@ -1,0 +1,164 @@
+---
+alwaysApply: true
+---
+
+# QA Test Case Management Rules (Jira + Xray)
+
+## Overview
+Defines comprehensive rules for managing test cases in the QA repository, including AI-powered generation and synchronization with Jira Cloud using Xray for test management.
+
+## QA Workflow Process
+
+### Phase 1: AI-Powered Test Case Generation & Review
+1. **QA provides user story link** from Jira
+2. **System automatically detects hierarchical structure** from Jira (Epic -> Story hierarchy)
+3. **System creates folder structure** automatically based on project/epic/story hierarchy
+4. **AI generates comprehensive test cases** based on user story acceptance criteria, business rules, and validation requirements
+5. **QA reviews AI-generated test cases** for accuracy and completeness
+6. **Test cases are validated** against all acceptance criteria and business rules
+7. **Work is completed** in repository with proper labeling and linking
+
+### Phase 2: Jira Synchronization (Manual Request)
+8. **QA explicitly requests to synchronize** changes with Jira
+9. **System validates hierarchical IDs** using validation scripts
+10. **Synchronization is executed** according to Jira integration rules
+11. **Test cases are linked** to user stories with proper relationships
+
+## AI-Powered Test Case Generation Guidelines
+
+### Comprehensive Context Provision
+Provide AI with:
+- **User story URL** from Jira (e.g., `https://your-domain.atlassian.net/browse/PROJ-123`)
+- **Acceptance criteria** (AC1, AC2, etc.)
+- **Business rules** and validation requirements
+- **Validation rules** and constraints
+
+### AI Test Case Generation Instructions
+
+#### Core Requirements
+- Use Jira MCP tools to retrieve issue details
+- Generate test cases covering all acceptance criteria
+- Create test cases for validation rules and error handling
+- Include positive, negative, and boundary test scenarios
+- Follow naming convention: `[TC] [Issue Key] - [Feature Name] - [Functionality] - [Check/Test/Verify]`
+
+#### Critical Field Requirements
+- **Summary field**: Must contain information about AC covered and user story key
+- **Test Steps**: Must be saved with specific, actionable steps
+- **Expected Results**: Must be saved with measurable outcomes
+
+## Test Case Categories to Generate
+
+### 1. Happy Path Tests
+- **Purpose**: Valid data scenarios covering main user flow
+- **Focus**: Primary functionality and user journeys
+- **Priority**: Usually P1-P2
+
+### 2. Validation Tests
+- **Purpose**: Field validation, format requirements, business rules
+- **Focus**: Input validation, data format constraints, error message verification
+- **Priority**: Usually P2-P3
+
+### 3. Error Handling Tests
+- **Purpose**: Invalid data, permission errors, system errors
+- **Focus**: Negative scenarios, error conditions, exception handling
+- **Priority**: Usually P2-P3
+
+### 4. Boundary Tests
+- **Purpose**: Edge cases, limits, constraints
+- **Focus**: Boundary value analysis, limit testing
+- **Priority**: Usually P3-P4
+
+### 5. Integration Tests
+- **Purpose**: Cross-component functionality if applicable
+- **Focus**: Component interactions, data flow between modules
+- **Priority**: Usually P2-P3
+
+### 6. Regression Tests
+- **Purpose**: Layout and UI verification, reference data validation
+- **Focus**: Search/filter/sort functionality (positive only), CRUD operations
+- **Priority**: Usually P1-P2
+
+## AI-Generated Test Case Requirements
+
+### Test Case Title Requirements
+- **Format**: `[TC] [Issue Key] - [Feature Name] - [Functionality] - [Check/Test/Verify]`
+- **Length**: Short and simple but descriptive
+- **Content**: Describe checks performed in scope
+- **Example**: `[TC] PROJ-123 - Authentication - Login - Verify Valid Credentials`
+
+### Test Steps Requirements
+- **Simple Step Design**: Use user-friendly, instructional language
+- **Single Action Per Step**: Each step should contain only one specific action
+- **Conversational Language**: Natural, easy-to-follow instructions
+- **Number**: As short as possible while covering full flow
+- **Detail**: As detailed as possible
+- **Completeness**: No missing or extra steps
+
+### Expected Results Requirements
+- **Number**: 1 check per test case (when possible)
+- **Specificity**: Not abstract; verify defined behavior
+- **Measurability**: Can be properly measured in transparent way
+- **Correspondence**: Each step should have corresponding expected result
+
+## Priority Setting Guidelines
+
+### P1 - Critical Functionality
+- **Criteria**: Critical functionality, commonly used by users, affects many areas
+- **Examples**: Login, core business processes, payment flows
+
+### P2 - Secondary Positive Flows
+- **Criteria**: Functionality/layout covering secondary positive business flows
+- **Examples**: Optional features, secondary user journeys
+
+### P3 - Secondary Negative Flows
+- **Criteria**: Functionality/layout covering secondary negative business flows
+- **Examples**: Error handling, edge cases
+
+### P4 - Minor Issues
+- **Criteria**: Minor layout issues, rare and unexpected user actions
+- **Examples**: Cosmetic issues, very edge cases
+
+## Labeling Requirements
+
+### Label Format
+- **Format**: Plain text, lowercase with hyphens (no spaces)
+- **Area labels**: Related to area of usage (e.g., `authentication`, `user-management`)
+- **User story labels**: Format `story-PROJ-123`
+- **Automation labels**: `to-automate` for automatable tests
+- **Priority labels**: `priority-p1`, `priority-p2`, etc.
+
+## Example Query for Cursor AI
+
+```
+Please read the context of User Story PROJ-123 from Jira.
+
+Then generate comprehensive test cases for the user story and add them to the repository under the appropriate structure.
+
+Requirements:
+1. Extract issue details using Jira MCP tools
+2. Analyze all acceptance criteria and business rules
+3. Generate test cases covering ALL scenarios:
+   - Happy Path
+   - Validation
+   - Error Handling
+   - Boundary
+   - Integration (if applicable)
+   - Regression
+
+4. Follow naming convention: "[TC] [Issue Key] - [Feature Name] - [Functionality] - [Check/Test/Verify]"
+5. Create detailed test steps with specific actions and expected results
+6. Set proper priorities (P1-P4)
+7. Link all test cases to the user story with "Tests" relationship
+8. Add appropriate labels
+
+Please provide the generated test cases ready for creation.
+```
+
+## Related Rule Files
+
+- **Repository Structure**: See `qa-repository-structure.mdc`
+- **Jira Integration**: See `qa-jira-integration.mdc`
+- **Xray Sync**: See `qa-xray-sync.mdc`
+- **Test Generation**: See `qa-test-generation.mdc`
+- **File Templates**: See `qa-file-templates.mdc`
