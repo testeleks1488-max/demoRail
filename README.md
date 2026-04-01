@@ -1,6 +1,6 @@
 # Jira QA Space - Test Case Management Framework
 
-AI-powered test case management framework for Cursor IDE with Jira/Xray integration via MCP.
+AI-powered test case management framework for Cursor IDE with **Jira/Xray** and **TestRail** integration via MCP.
 
 ## Overview
 
@@ -23,29 +23,26 @@ This framework enables QA engineers to:
                                                 │
                                                 ▼
                               ┌─────────────────────────────┐
-                              │      MCP Server (Node.js)   │
+                              │   MCP: jira-xray + testrail │
                               │  ┌─────────┐ ┌───────────┐  │
-                              │  │Jira API │ │ Xray API  │  │
+                              │  │Jira/Xray│ │ TestRail  │  │
                               │  └─────────┘ └───────────┘  │
                               └──────────────┬──────────────┘
                                              │
                                              ▼
                               ┌─────────────────────────────┐
-                              │        Jira Cloud           │
-                              │  ┌───────┐ ┌─────────────┐  │
-                              │  │Stories│ │ Xray Tests  │  │
-                              │  └───────┘ └─────────────┘  │
+                              │   Jira Cloud + TestRail     │
                               └─────────────────────────────┘
 ```
 
 ## Quick Start
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 18+ (on PATH; required for `npx` TestRail MCP)
 - Cursor IDE
-- Jira Cloud account with Xray installed
-- Jira API Token
-- Xray Cloud API credentials
+- Jira Cloud account with Xray installed (optional if you only use TestRail)
+- Jira API Token and Xray Cloud API credentials (for Jira/Xray MCP)
+- TestRail URL, login, and API key (for [TestRail MCP](https://github.com/bun913/mcp-testrail))
 
 ### Installation
 
@@ -170,7 +167,10 @@ jira-qa-space/
 │       ├── qa-xray-sync.mdc        # Xray synchronization
 │       ├── qa-test-generation.mdc  # Test generation
 │       ├── qa-repository-structure.mdc
-│       └── qa-file-templates.mdc
+│       ├── qa-file-templates.mdc
+│       ├── qa-testrail-mcp.mdc
+│       ├── qa-git-user-push-only.mdc
+│       └── qa-language-uk-chat-en-code.mdc
 ├── utilities/
 │   ├── jira-mcp-server/            # MCP server
 │   │   ├── index.js                # Server entry point
@@ -197,6 +197,8 @@ jira-qa-space/
 
 ## MCP Tools Reference
 
+### Jira / Xray (`jira-xray` server)
+
 | Tool | Description |
 |------|-------------|
 | `jira_get_issue` | Get issue details by key |
@@ -209,6 +211,12 @@ jira-qa-space/
 | `jira_create_test_execution` | Create execution |
 | `jira_link_test_to_story` | Link test to story |
 | `jira_add_labels` | Add labels |
+
+### TestRail (`testrail` server — [`bun913/mcp-testrail`](https://github.com/bun913/mcp-testrail))
+
+Use the **TestRail MCP** tools from that package (e.g. projects, suites, sections, cases, runs, results). Full list and parameters are defined upstream. Typical workflow: `getCaseFields` / resolve template → `addCase` / `updateCase` with steps and `refs` for Jira story keys.
+
+Do **not** use removed repo CLI scripts for TestRail; the agent should call TestRail MCP tools only (see [`.cursor/rules/qa-testrail-mcp.mdc`](.cursor/rules/qa-testrail-mcp.mdc)).
 
 ## Test Case Naming Convention
 
@@ -247,6 +255,11 @@ Examples:
 1. Confirm Xray is installed in project
 2. Verify Xray Cloud credentials (separate from Jira)
 3. Check Xray issue types are configured
+
+### TestRail MCP (`spawn node ENOENT`, auth, 400 on addCase)
+1. Ensure Node.js is on **PATH** (`npx` runs the TestRail MCP).
+2. Check `TESTRAIL_URL`, `TESTRAIL_USERNAME`, `TESTRAIL_API_KEY` in `mcp.json`.
+3. **HTTP 400** when creating cases: wrong template or required custom fields—use TestRail MCP `getCaseFields` and follow [bun913/mcp-testrail troubleshooting](https://github.com/bun913/mcp-testrail#troubleshooting).
 
 ### Tests Not Appearing in Jira / "Specify a valid issue type" (400)
 1. Check project has a Test issue type (e.g. in Project settings → Issue types).
@@ -290,4 +303,4 @@ MIT
 For issues:
 1. Check troubleshooting section
 2. Review Cursor rules for guidance
-3. Check Jira/Xray API documentation
+3. Check Jira/Xray / TestRail API documentation ([TestRail MCP README](https://github.com/bun913/mcp-testrail))

@@ -5,6 +5,11 @@
 - **URL**: [To be created]
 - **Sync Status**: ⏳ Pending sync
 
+## TestRail Reference
+- **Case ID**: 60
+- **Location**: DEMOTESTRAIL · suite Master · section DEMO
+- **Sync Status**: ✅ Synced
+
 ## User Story Reference
 - **Story Key**: TES-1
 - **Story URL**: https://testeleks1488.atlassian.net/browse/TES-1

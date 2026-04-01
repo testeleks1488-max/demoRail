@@ -1,0 +1,27 @@
+---
+description: TestRail only via @bun913/mcp-testrail MCP; templates, fields, refs for Jira traceability.
+alwaysApply: true
+---
+
+# TestRail: MCP only
+
+## Mandatory
+
+- Use **only** the TestRail MCP server ([`@bun913/mcp-testrail`](https://github.com/bun913/mcp-testrail)) for creating/updating TestRail data from this workspace.
+- **Do not** run or suggest removed repo scripts (`sync-to-testrail.js`, `testrail-ping.js`, etc.); they are not part of this project anymore.
+
+## Configuration
+
+- Credentials live in Cursor **`mcp.json`** for the `testrail` server: `TESTRAIL_URL`, `TESTRAIL_USERNAME`, `TESTRAIL_API_KEY` (see repo `README.md` / `utilities/README.md`).
+- `TESTRAIL_USERNAME` is the TestRail login (usually the same as email).
+
+## Workflow
+
+1. Read local `[TC] *.md` files under `test-plans/.../test-cases/` when the user wants cases mirrored in TestRail (structure matches `templates/test-case-template.md`).
+2. Before heavy `addCase` / `updateCase` usage, call **`getCaseFields`** (or equivalent upstream tool) so payloads match **required custom fields** and **templates** for that TestRail project.
+3. For **separated steps** (“Test Case (Steps)” template), pass fields the MCP maps to TestRail’s separated-step format (per upstream tool names and [upstream troubleshooting](https://github.com/bun913/mcp-testrail)). If HTTP **400** occurs, adjust template/fields—do not invent repo-specific REST payloads.
+4. Set **`refs`** (or project-specific fields) to the **Jira story key** (e.g. `TES-1`) for traceability when the tool supports it.
+
+## Permissions
+
+- **403** on TestRail usually means insufficient project role (Tester/Lead vs Guest). Direct the user to their TestRail admin; do not fall back to unofficial APIs in this repo.

@@ -10,4 +10,6 @@
 
 4. **Sync to Jira:** *"Sync test cases for PROJ-101 to Jira"* (or run `node utilities/sync-to-jira.js --all test-plans` with env set). Optionally run `node utilities/validate-before-sync.js --all test-plans` first.
 
+5. **TestRail (optional):** With [TestRail MCP](https://github.com/bun913/mcp-testrail) configured in Cursor, ask the AI to create/update cases from the same `[TC] *.md` files (see `.cursor/rules/qa-testrail-mcp.mdc`).
+
 Optional: create folder structure only with `node utilities/fetch-story.js PROJ-101`.

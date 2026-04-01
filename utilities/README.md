@@ -6,21 +6,21 @@ This directory contains utilities for integrating with Jira and Xray test manage
 
 ```
 utilities/
-├── jira-mcp-server/          # MCP Server for Cursor integration
+├── jira-mcp-server/          # MCP Server for Cursor (Jira + Xray)
 │   ├── index.js              # Main MCP server
 │   ├── jira-client.js        # Jira REST API client
 │   ├── xray-client.js        # Xray REST API client
 │   ├── config.example.json   # Example configuration
 │   └── package.json          # Dependencies
 ├── sync-to-jira.js           # Batch sync utility (Jira/Xray)
-├── sync-to-testrail.js       # Push .md test cases to TestRail (section per story, refs = Jira key)
-├── parse-test-case-md.js     # Shared markdown parser for sync scripts
+├── parse-test-case-md.js     # Shared markdown parser (Jira sync + reading [TC] *.md for AI)
 ├── load-env.js               # Loads repo-root .env into process.env
-├── testrail-client.js        # Minimal TestRail REST API v2 client
 ├── validate-before-sync.js   # Validate Story keys and (optionally) folder structure before sync
 ├── fetch-story.js            # Fetch story hierarchy from Jira, create test-plans folder structure
 └── README.md                 # This file
 ```
+
+**TestRail** is integrated via the external MCP package [`@bun913/mcp-testrail`](https://github.com/bun913/mcp-testrail) (see **TestRail MCP** below)—not via scripts in this folder.
 
 ## MCP Server
 
@@ -57,13 +57,14 @@ The MCP server provides Cursor IDE with tools to interact with Jira and Xray.
 
 2. **Configure MCP in Cursor**
    
-   Add to `~/.cursor/mcp.json`:
+   Add **both** servers to `~/.cursor/mcp.json`. Use an **absolute path** to `jira-mcp-server/index.js` on your machine.
+
    ```json
    {
      "mcpServers": {
        "jira-xray": {
          "command": "node",
-         "args": ["C:/Users/anatolii.alieksanov/Desktop/jira-qa-space/utilities/jira-mcp-server/index.js"],
+         "args": ["/absolute/path/to/jira-qa-space/utilities/jira-mcp-server/index.js"],
          "env": {
            "JIRA_URL": "https://your-domain.atlassian.net",
            "JIRA_EMAIL": "your-email@example.com",
@@ -71,12 +72,29 @@ The MCP server provides Cursor IDE with tools to interact with Jira and Xray.
            "XRAY_CLIENT_ID": "your-xray-client-id",
            "XRAY_CLIENT_SECRET": "your-xray-client-secret"
          }
+       },
+       "testrail": {
+         "command": "npx",
+         "args": ["@bun913/mcp-testrail@latest"],
+         "env": {
+           "TESTRAIL_URL": "https://your-instance.testrail.io",
+           "TESTRAIL_USERNAME": "your-testrail-login-or-email",
+           "TESTRAIL_API_KEY": "your-testrail-api-key"
+         }
        }
      }
    }
    ```
 
 3. **Restart Cursor**
+
+### TestRail MCP (external)
+
+- **Package:** [`@bun913/mcp-testrail`](https://www.npmjs.com/package/@bun913/mcp-testrail) · **Source:** [bun913/mcp-testrail](https://github.com/bun913/mcp-testrail)
+- **Tools:** projects, suites, sections, cases, runs, results, etc. (see upstream README).
+- **Workflow:** Read local `[TC] *.md` with the same markdown structure as templates; create/update cases via MCP using your project’s template and custom fields. If HTTP 400 occurs, use upstream guidance: call `getCaseFields`, set the correct **template** for separated steps, and document project rules in `CLAUDE.md` / agent rules as needed.
+- **Refs:** Set TestRail `refs` (or required custom fields) to the Jira story key for traceability.
+- **API reference:** [TestRail REST API](https://support.testrail.com/hc/en-us/sections/7077185274644-API-reference)
 
 ### Getting Credentials
 
@@ -153,40 +171,6 @@ set JIRA_API_TOKEN=your-api-token
 node sync-to-jira.js --steps-only "test-plans/SCRUM/SCRUM-5/test-cases"
 ```
 
-## TestRail sync (`sync-to-testrail.js`)
-
-Pushes `[TC] *.md` files into a **TestRail project**: creates a **section** named `{STORY_KEY} — Tests` (e.g. `TES-1 — Tests`) if missing, then **add_case** with **`refs` = Jira story key**.
-
-1. Copy `.env.example` to `.env` at **repo root** and set:
-   - `TESTRAIL_URL` (e.g. `https://eleksdemo.testrail.io`)
-   - `TESTRAIL_EMAIL`
-   - `TESTRAIL_API_KEY` (My Settings → API Keys in TestRail; never commit)
-   - `TESTRAIL_PROJECT_ID` (numeric ID from project URL or settings)
-2. Optional: `TESTRAIL_SUITE_ID` — if omitted, the **first suite** in the project is used.
-3. Run from repo root:
-
-```bash
-npm run sync-testrail
-# or
-node utilities/sync-to-testrail.js --dir "test-plans/TES/TES-1/test-cases"
-```
-
-If `custom_steps_separated` is rejected by your TestRail template, the script **retries** with title + refs + priority only (add steps in UI).
-
-**403 Forbidden:** your user can log in but lacks **project role** permissions (add suites / cases). Ask a TestRail admin to add you to the project with **Tester** or **Lead** (or equivalent write access), not Guest-only.
-
-**Can add cases / runs but cannot create suites:** normal in some roles. Either ask Lead to create one suite in the UI and set `TESTRAIL_SUITE_ID` in `.env`, or leave `TESTRAIL_SUITE_NAME` unset so sync uses the **first** suite; if API suite creation fails, sync **falls back** to the first existing suite automatically.
-
-### Create a suite (API)
-
-```bash
-npm run testrail-create-suite -- "My new suite" "Optional description"
-```
-
-Or set **`TESTRAIL_SUITE_NAME`** in `.env`: on `npm run sync-testrail`, the suite is **created** if it does not exist, then sections/cases are added under it.
-
-See [TestRail API reference](https://support.testrail.com/hc/en-us/sections/7077185274644-API-reference).
-
 ## Validate Before Sync
 
 Run before syncing to ensure Story keys in your markdown files exist in Jira (and optionally that folder structure matches):
@@ -244,6 +228,9 @@ Creates `test-plans/PROJ/EPIC/PROJ-101/test-cases/` using Jira hierarchy (parent
 ### Xray Cloud API v2
 - Base URL: `https://xray.cloud.getxray.app/api/v2`
 - [Documentation](https://docs.getxray.app/display/XRAYCLOUD/REST+API)
+
+### TestRail (via MCP)
+- Used through [@bun913/mcp-testrail](https://github.com/bun913/mcp-testrail); see [TestRail API](https://support.testrail.com/hc/en-us/sections/7077185274644-API-reference) for field semantics.
 
 ## Support
 
