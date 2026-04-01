@@ -20,7 +20,7 @@ alwaysApply: true
 1. Read local `[TC] *.md` files under `test-plans/.../test-cases/` when the user wants cases mirrored in TestRail (structure matches `templates/test-case-template.md`).
 2. Before heavy `addCase` / `updateCase` usage, call **`getCaseFields`** (or equivalent upstream tool) so payloads match **required custom fields** and **templates** for that TestRail project.
 3. For **separated steps** (“Test Case (Steps)” template), pass fields the MCP maps to TestRail’s separated-step format (per upstream tool names and [upstream troubleshooting](https://github.com/bun913/mcp-testrail)). If HTTP **400** occurs, adjust template/fields—do not invent repo-specific REST payloads.
-4. Set **`refs`** (or project-specific fields) to the **Jira story key** (e.g. `TES-1`) for traceability when the tool supports it.
+4. Set **`refs`** (or project-specific fields) to the **Jira story key** (e.g. `SCRUM-5`) for traceability when the tool supports it.
 
 ## Permissions
 
